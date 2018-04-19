@@ -51,5 +51,7 @@ top10_2015 <-filter(top10s, year==2015)
 plotdat <- filter(ungroup(groupdat), Party %in% top10_2015$Party)
 
 ghgplot <- ggplot(plotdat, aes(x=year, y=emissions, color=Party, group=Party)) +
-  geom_point() + geom_line()
+  geom_point() + geom_line()+theme(legend.position="bottom") 
 ghgplot
+
+# PIPES AND CHAINING: Pipes take input from the left and pass it to the right without naming an intermediate.
