@@ -55,3 +55,51 @@ ghgplot <- ggplot(plotdat, aes(x=year, y=emissions, color=Party, group=Party)) +
 ghgplot
 
 # PIPES AND CHAINING: Pipes take input from the left and pass it to the right without naming an intermediate.
+dat2015 <- rawdata %>% 
+  select(1, 3:28) %>% 
+  rename("2015" = `Last Inventory Year (2015)`) %>% 
+  gather(key="year", value="emissions", -1) %>% 
+  group_by(year) %>%
+  mutate(annualrank = rank(-emissions)) %>% 
+  filter(year == 2015,
+         annualrank <= 10)
+
+pipedat <- rawdata %>% 
+  select(1, 3:28) %>% 
+  rename("2015" = `Last Inventory Year (2015)`) %>% 
+  gather(key="year", value="emissions", -1) %>% 
+  filter(Party %in% dat2015$Party) 
+
+# Positioning of theme is important! If before: theme is applied; if after - all options are overridden
+pipedat %>% ggplot(aes(x=year, y=emissions, color=Party, group=Party)) + 
+  geom_point() + geom_line() + theme_bw()+ theme(legend.position="bottom") 
+
+# Joins:
+# unique returns a vector, data frame or array like x but with duplicate elements/rows removed.
+fakeGDP <- data.frame(unique(pipedat$Party), sample(1e4:1e5, length(unique(pipedat$Party)))) %>%
+  rename(Party = `unique.pipedat.Party.`, fakeGDP = `sample.10000.1e.05..length.unique.pipedat.Party...`)
+
+joindat <- pipedat %>%
+  left_join(fakeGDP, by="Party")
+
+##### practice problems!
+# Problem 1:Compare trends over time of the top 5 and bottom 5
+# carbon emitters based on the first year for which data was 
+# collected. How have their emissions changed over time?
+
+# Choose top emissions
+top_emiss <- pipedat %>%
+  group_by(Party)  %>%
+  top_n(5,emissions)  %>%
+  filter(year==1990)
+  top_emiss$emission_type <- "top"
+
+#Choose bottom emissions
+bottom_emiss <- pipedat %>%
+  group_by(Party)  %>%
+  top_n(-5,emissions)  %>%
+  filter(year==1990)
+  bottom_emiss$emission_type <- "bottom"
+
+#Append vectors  
+emissioners <- rbind(top_emiss, bottom_emiss)
