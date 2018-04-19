@@ -101,5 +101,24 @@ bottom_emiss <- pipedat %>%
   filter(year==1990)
   bottom_emiss$emission_type <- "bottom"
 
-#Append vectors  
+#Append the top and bottom vectors  
 emissioners <- rbind(top_emiss, bottom_emiss)
+
+# Merge the emissioner dataset and the original dataset to include all of the data
+# This is a stupid solution because I can't automate it. But I can use rank because there are only 10 countries. 
+joined <- merge(pipedat, emissioners, all = TRUE)
+joined$emisson_type[joined$Party=="Australia"] <- "bottom"
+joined$emisson_type[joined$Party=="Canada"] <- "bottom"
+joined$emisson_type[joined$Party=="Japan"] <- "bottom"
+joined$emisson_type[joined$Party=="Turkey"] <- "bottom"
+joined$emisson_type[joined$Party=="United States of America"] <- "bottom"
+joined$emisson_type[joined$Party=="Russian Federation"] <- "top"
+joined$emisson_type[joined$Party=="United Kingdom of Great Britain and Northern Ireland"] <- "top"
+joined$emisson_type[joined$Party=="European Union (KP)"] <- "top"
+joined$emisson_type[joined$Party=="European Union (Convention)"] <- "top"
+joined$emisson_type[joined$Party=="Germany"] <- "top"
+
+# Now plot
+joined %>% ggplot(aes(x=year, y=emissions, color=emisson_type)) + 
+  geom_point() + theme_bw()+ theme(legend.position="bottom") 
+
